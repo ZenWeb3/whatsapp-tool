@@ -24,7 +24,7 @@ const Dashboard = () => {
   const mainChatParticipant = topTwoSenders[0]?.sender || "Unknown";
 
   return (
-    <main className="bg-[#14011d] min-h-screen flex flex-col font-mono text-white">
+    <main className="bg-[#14011d]  border-gray-600/50 min-h-screen flex flex-col font-mono text-white">
       <div className="mx-5 md:mx-10 lg:mx-40 my-10 flex flex-col gap-6">
         <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8 mb-6">
           <div
@@ -45,7 +45,7 @@ const Dashboard = () => {
         </div>
 
         <div className="flex flex-col md:flex-row flex-wrap gap-4 md:gap-6">
-          <div className="bg-[#1e0a2c] p-4 md:p-6 rounded-lg shadow-md flex-1 min-w-[220px] flex flex-col">
+          <div className="bg-[#1e0a2c] border  border-gray-600/50 p-4 md:p-6 rounded-lg shadow-md flex-1 min-w-[220px] flex flex-col">
             <div className="flex justify-between items-center w-full">
               <p className="text-gray-400 text-sm md:text-base">
                 Total Messages
@@ -59,7 +59,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-[#1e0a2c] p-4 md:p-6 rounded-lg shadow-md flex-1 min-w-[220px] flex flex-col">
+          <div className="bg-[#1e0a2c] border  border-gray-600/50 p-4 md:p-6 rounded-lg shadow-md flex-1 min-w-[220px] flex flex-col">
             <div className="flex justify-between items-center w-full">
               <p className="text-gray-400 text-sm md:text-base">
                 Conversation Started
@@ -73,7 +73,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-[#1e0a2c] p-4 md:p-6 rounded-lg shadow-md flex-1 min-w-[220px] flex flex-col">
+          <div className="bg-[#1e0a2c] border  border-gray-600/50 p-4 md:p-6 rounded-lg shadow-md flex-1 min-w-[220px] flex flex-col">
             <div className="flex justify-between items-center w-full">
               <p className="text-gray-400 text-sm md:text-base">Total Emojis</p>
               <Smile className="w-5 h-5 md:w-6 md:h-6" />
@@ -87,7 +87,7 @@ const Dashboard = () => {
         </div>
 
         <div className="mt-3 md:mt-6 flex flex-col md:flex-row gap-4 md:gap-6">
-          <div className="bg-[#1e0a2c] p-6 rounded-lg flex-[0.8] flex flex-col">
+          <div className="bg-[#1e0a2c]  border-gray-600/50 border p-6 rounded-lg flex-[0.8] flex flex-col">
             <div className="flex items-center gap-3 mb-4">
               <Users className="w-5 h-5 md:w-6 md:h-6 text-white" />
               <h1 className="font-bold text-white text-lg">Who Talks More</h1>
@@ -116,7 +116,7 @@ const Dashboard = () => {
             })}
           </div>
 
-          <div className="bg-[#1e0a2c] p-6 rounded-lg flex-[0.37] flex flex-col">
+          <div className="bg-[#1e0a2c] border-gray-600/50  border p-6 rounded-lg flex-[0.37] flex flex-col">
             <div className="flex items-center gap-3 mb-4">
               <HeartIcon />
               <h1 className="font-bold text-white text-lg">Most Used Emojis</h1>
@@ -135,7 +135,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="mt-6 bg-[#1e0a2c] p-6 rounded-lg">
+        <div className="mt-6 bg-[#1e0a2c] border  border-gray-600/50 p-6 rounded-lg">
           <h1 className="text-white font-bold text-lg mb-4">
             Most Common Words
           </h1>
