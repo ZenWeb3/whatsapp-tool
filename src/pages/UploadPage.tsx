@@ -3,6 +3,7 @@ import FileUploader from "../components/FileUploader";
 import { useNavigate } from "react-router-dom";
 import { ParseChat } from "../utils/parseChat";
 import { getChatStats } from "../utils/getChatStats";
+import * as JSZip from "jszip";
 
 const UploadPage = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -12,7 +13,7 @@ const UploadPage = () => {
 
   const navigate = useNavigate();
 
-  const handleFileSelect = (file: File | null) => {
+  const handleFileSelect = async (file: File | null) => {
     if (!file) {
       setSelectedFile(null);
       setFileContent(null);
@@ -20,8 +21,11 @@ const UploadPage = () => {
       return;
     }
 
-    if (!file.name.endsWith(".txt")) {
-      setError("Please upload a .txt file");
+    const isTxt = file.name.endsWith(".txt");
+    const isZip = file.name.endsWith(".zip");
+
+    if (!isTxt && !isZip) {
+      setError("Please upload a .txt or .zip file");
       return;
     }
 
@@ -33,16 +37,35 @@ const UploadPage = () => {
     setSelectedFile(file);
     setError(null);
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setFileContent(reader.result as string);
-    };
-    reader.onerror = () => {
-      console.error("Error reading file");
+    try {
+      if (isTxt) {
+        const reader = new FileReader();
+        reader.onload = () => setFileContent(reader.result as string);
+        reader.onerror = () => {
+          setError("Error reading file. Please try again.");
+          setFileContent(null);
+        };
+        reader.readAsText(file, "UTF-8");
+      } else if (isZip) {
+        const zip = await JSZip.loadAsync(file);
+        const txtFileName = Object.keys(zip.files).find((name) =>
+          name.endsWith(".txt")
+        );
+
+        if (!txtFileName) {
+          setError("No .txt file found inside the zip");
+          setFileContent(null);
+          return;
+        }
+
+        const txtContent = await zip.files[txtFileName].async("string");
+        setFileContent(txtContent);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to read the file. Make sure it is valid.");
       setFileContent(null);
-      setError("Error reading file. Please try again.");
-    };
-    reader.readAsText(file, "UTF-8");
+    }
   };
 
   const handleAnalyze = async () => {
@@ -56,53 +79,19 @@ const UploadPage = () => {
         .replace(/^\uFEFF/, "")
         .replace(/^\u200E/, "");
 
-      console.log(
-        `Processing file with ${cleanContent.split("\n").length} lines`
-      );
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       const messages = ParseChat(cleanContent);
 
       if (messages.length === 0) {
         setError(
-          "No messages found. Please make sure you uploaded a WhatsApp chat export in the format: [MM/DD/YY, HH:MM:SS AM/PM] Sender: Message"
+          "No messages found. Make sure you uploaded a WhatsApp chat export in the format: [MM/DD/YY, HH:MM:SS AM/PM] Sender: Message"
         );
         setLoading(false);
         return;
       }
 
       const stats = getChatStats(messages);
-
-      console.log("=== Parsed Messages ===");
-      console.log(`Successfully parsed ${messages.length} messages`);
-      messages.slice(0, 5).forEach((msg, idx) => {
-        console.log(
-          `${idx + 1}. [${msg.timeStamp}] ${
-            msg.sender
-          }: ${msg.message.substring(0, 50)}${
-            msg.message.length > 50 ? "..." : ""
-          } ${msg.emojis?.length ? `Emojis: ${msg.emojis.join("")}` : ""}`
-        );
-      });
-
-      console.log("\n=== Chat Statistics ===");
-      console.log(`Total Messages: ${stats.totalMessages}`);
-      console.log(`Conversation Started: ${stats.conversationStarted}`);
-      console.log(`Total Emojis: ${stats.totalEmojis}`);
-      console.log("Top Senders:");
-      stats.topSenders.forEach((sender) =>
-        console.log(
-          `  - ${sender.sender}: ${sender.count} messages (${sender.percentage})`
-        )
-      );
-      console.log("Most Used Emojis:");
-      stats.mostUsedEmojis.forEach((e) =>
-        console.log(`  - ${e.emoji}: ${e.count}`)
-      );
-      console.log("Most Common Words:");
-      stats.mostCommonWords.forEach((w) =>
-        console.log(`  - ${w.word}: ${w.count}`)
-      );
 
       navigate("/dashboard", {
         state: { stats, messages: messages.slice(0, 100) },
@@ -119,13 +108,14 @@ const UploadPage = () => {
 
   return (
     <main className="text-xl text-white flex justify-center items-center min-h-screen px-4 bg-[#14011d]">
-      <div className="flex flex-col gap-6 max-w-xl items-center ">
+      <div className="flex flex-col gap-6 max-w-xl items-center">
         <h1 className="text-[24px] font-bold md:text-4xl lg:text-[45px] mb-2">
           WhatsApp Chat Analyzer
         </h1>
         <p className="text-center text-gray-300 text-sm md:text-base">
           Upload your exported WhatsApp{" "}
-          <span className="font-mono text-green-500">.txt</span> file and we'll
+          <span className="font-mono text-green-500">.txt</span> or{" "}
+          <span className="font-mono text-green-500">.zip</span> file and we'll
           analyze your conversations
         </p>
 

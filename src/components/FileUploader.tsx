@@ -13,7 +13,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFileSelect }) => {
   const onDrop = useCallback(
     (acceptedFiles: File[], fileRejections: any) => {
       if (fileRejections.length > 0) {
-        setError("Only .txt files are allowed");
+        setError("Only .txt and .zip files are allowed");
         return;
       }
 
@@ -45,7 +45,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFileSelect }) => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { "text/plain": [".txt"] },
+    accept: { "text/plain": [".txt"] , "application/zip": [".zip"]},
     multiple: false,
   });
 
