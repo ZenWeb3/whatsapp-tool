@@ -20,7 +20,7 @@ const Dashboard = () => {
     );
   }
 
-  const topTwoSenders = stats.topSenders.slice(0, 2);
+  const topTwoSenders = stats.topSenders.slice(0, 5);
   const mainChatParticipant = topTwoSenders[0]?.sender || "Unknown";
 
   return (
