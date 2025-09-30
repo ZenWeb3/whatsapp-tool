@@ -12,7 +12,7 @@ interface CountItem {
   count: number;
 }
 
-interface ChatStats {
+export interface ChatStats {
   totalMessages: number;
   conversationStarted: string;
   totalEmojis: number;

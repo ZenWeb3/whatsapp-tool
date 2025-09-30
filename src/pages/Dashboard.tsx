@@ -1,4 +1,5 @@
 import { useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import {
   ArrowLeft,
   LucideMessageCircle as Message,
@@ -6,11 +7,38 @@ import {
   HeartIcon,
   Users,
   Smile,
+  Brain,
+  Send,
+  Spotlight,
+  Loader2,
+  VenetianMask,
+  MessageCircleQuestionMark,
+  Laugh,
 } from "lucide-react";
+import {
+  analyzeConnection,
+  analyzePersonalities,
+  generateFunFacts,
+  analyzePatterns,
+  customAnalysis,
+} from "../utils/analyzeChatWithAI";
 
 const Dashboard = () => {
   const location = useLocation();
-  const { stats } = location.state || {};
+  const { stats, messages } = location.state || {};
+
+  const [connectionAnalysis, setConnectionAnalysis] = useState<string>("");
+  const [personalityInsights, setPersonalityInsights] = useState<string>("");
+  const [funFacts, setFunFacts] = useState<string>("");
+  const [patterns, setPatterns] = useState<string>("");
+  const [customPrompt, setCustomPrompt] = useState<string>("");
+  const [customResponse, setCustomResponse] = useState<string>("");
+
+  const [loadingConnection, setLoadingConnection] = useState(true);
+  const [loadingPersonality, setLoadingPersonality] = useState(true);
+  const [loadingFunFacts, setLoadingFunFacts] = useState(true);
+  const [loadingPatterns, setLoadingPatterns] = useState(true);
+  const [loadingCustom, setLoadingCustom] = useState(false);
 
   if (!stats) {
     return (
@@ -23,8 +51,41 @@ const Dashboard = () => {
   const topTwoSenders = stats.topSenders.slice(0, 5);
   const mainChatParticipant = topTwoSenders[0]?.sender || "Unknown";
 
+  useEffect(() => {
+    analyzeConnection(stats, messages)
+      .then(setConnectionAnalysis)
+      .finally(() => setLoadingConnection(false));
+
+    analyzePersonalities(stats, messages)
+      .then(setPersonalityInsights)
+      .finally(() => setLoadingPersonality(false));
+
+    generateFunFacts(stats, messages)
+      .then(setFunFacts)
+      .finally(() => setLoadingFunFacts(false));
+
+    analyzePatterns(stats, messages)
+      .then(setPatterns)
+      .finally(() => setLoadingPatterns(false));
+  }, [stats, messages]);
+
+  const handleCustomAnalysis = async () => {
+    if (!customPrompt.trim()) return;
+
+    setLoadingCustom(true);
+    try {
+      const response = await customAnalysis(customPrompt, stats, messages);
+      setCustomResponse(response);
+    } catch (err) {
+      console.error("Custom analysis error:", err);
+      setCustomResponse("Failed to generate analysis. Please try again.");
+    } finally {
+      setLoadingCustom(false);
+    }
+  };
+
   return (
-    <main className="bg-[#14011d]  border-gray-600/50 min-h-screen flex flex-col font-mono text-white">
+    <main className="bg-[#14011d] border-gray-600/50 min-h-screen flex flex-col font-mono text-white">
       <div className="mx-5 md:mx-10 lg:mx-40 my-10 flex flex-col gap-6">
         <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8 mb-6">
           <div
@@ -45,7 +106,7 @@ const Dashboard = () => {
         </div>
 
         <div className="flex flex-col md:flex-row flex-wrap gap-4 md:gap-6">
-          <div className="bg-[#1e0a2c] border  border-gray-600/50 p-4 md:p-6 rounded-lg shadow-md flex-1 min-w-[220px] flex flex-col">
+          <div className="bg-[#1e0a2c] border border-gray-600/50 p-4 md:p-6 rounded-lg shadow-md flex-1 min-w-[220px] flex flex-col">
             <div className="flex justify-between items-center w-full">
               <p className="text-gray-400 text-sm md:text-base">
                 Total Messages
@@ -59,7 +120,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-[#1e0a2c] border  border-gray-600/50 p-4 md:p-6 rounded-lg shadow-md flex-1 min-w-[220px] flex flex-col">
+          <div className="bg-[#1e0a2c] border border-gray-600/50 p-4 md:p-6 rounded-lg shadow-md flex-1 min-w-[220px] flex flex-col">
             <div className="flex justify-between items-center w-full">
               <p className="text-gray-400 text-sm md:text-base">
                 Conversation Started
@@ -73,7 +134,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-[#1e0a2c] border  border-gray-600/50 p-4 md:p-6 rounded-lg shadow-md flex-1 min-w-[220px] flex flex-col">
+          <div className="bg-[#1e0a2c] border border-gray-600/50 p-4 md:p-6 rounded-lg shadow-md flex-1 min-w-[220px] flex flex-col">
             <div className="flex justify-between items-center w-full">
               <p className="text-gray-400 text-sm md:text-base">Total Emojis</p>
               <Smile className="w-5 h-5 md:w-6 md:h-6" />
@@ -87,7 +148,7 @@ const Dashboard = () => {
         </div>
 
         <div className="mt-3 md:mt-6 flex flex-col md:flex-row gap-4 md:gap-6">
-          <div className="bg-[#1e0a2c]  border-gray-600/50 border p-6 rounded-lg flex-[0.8] flex flex-col">
+          <div className="bg-[#1e0a2c] border-gray-600/50 border p-6 rounded-lg flex-[0.8] flex flex-col">
             <div className="flex items-center gap-3 mb-4">
               <Users className="w-5 h-5 md:w-6 md:h-6 text-white" />
               <h1 className="font-bold text-white text-lg">Who Talks More</h1>
@@ -116,7 +177,7 @@ const Dashboard = () => {
             })}
           </div>
 
-          <div className="bg-[#1e0a2c] border-gray-600/50  border p-6 rounded-lg flex-[0.37] flex flex-col">
+          <div className="bg-[#1e0a2c] border-gray-600/50 border p-6 rounded-lg flex-[0.37] flex flex-col">
             <div className="flex items-center gap-3 mb-4">
               <HeartIcon />
               <h1 className="font-bold text-white text-lg">Most Used Emojis</h1>
@@ -135,7 +196,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="mt-6 bg-[#1e0a2c] border  border-gray-600/50 p-6 rounded-lg">
+        <div className="mt-6 bg-[#1e0a2c] border border-gray-600/50 p-6 rounded-lg">
           <h1 className="text-white font-bold text-lg mb-4">
             Most Common Words
           </h1>
@@ -148,6 +209,124 @@ const Dashboard = () => {
                 {w.word} ({w.count})
               </span>
             ))}
+          </div>
+        </div>
+
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold text-white mb-6 ">
+            AI-Powered Insights
+          </h2>
+
+          <div className="bg-[#1e0a2c] border border-gray-600/50 p-6 rounded-lg mb-6">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <Brain />
+              Connection Analysis
+            </h3>
+            {loadingConnection ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
+              </div>
+            ) : (
+              <div className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                {connectionAnalysis}
+              </div>
+            )}
+          </div>
+
+          <div className="bg-[#1e0a2c] border border-gray-600/50 p-6 rounded-lg mb-6">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <VenetianMask /> Personality Insights
+            </h3>
+            {loadingPersonality ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
+              </div>
+            ) : (
+              <div className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                {personalityInsights}
+              </div>
+            )}
+          </div>
+
+          <div className="bg-[#1e0a2c] border border-gray-600/50 p-6 rounded-lg mb-6">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <Laugh />
+              Fun Facts
+            </h3>
+            {loadingFunFacts ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
+              </div>
+            ) : (
+              <div className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                {funFacts}
+              </div>
+            )}
+          </div>
+
+          <div className="bg-[#1e0a2c] border border-gray-600/50 p-6 rounded-lg mb-6 ">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <Spotlight /> Other Patterns
+            </h3>
+            {loadingPatterns ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
+              </div>
+            ) : (
+              <div className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                {patterns}
+              </div>
+            )}
+          </div>
+
+          <div className="bg-[#1e0a2c] border border-gray-600/50 p-6 rounded-lg">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <MessageCircleQuestionMark /> Ask a Custom Question
+            </h3>
+            <p className="text-gray-400 text-sm mb-4">
+              Ask anything about this chat and get AI-powered insights!
+            </p>
+
+            <div className="flex flex-col md:flex-row gap-3">
+              <input
+                type="text"
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleCustomAnalysis()}
+                placeholder="e.g., What topics do they talk about most?"
+                className="flex-1 bg-gray-800 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-pink-500 focus:outline-none"
+                disabled={loadingCustom}
+              />
+              <button
+                onClick={handleCustomAnalysis}
+                disabled={loadingCustom || !customPrompt.trim()}
+                className={`px-6 py-3 rounded-lg font-medium transition flex items-center justify-center gap-2 ${
+                  loadingCustom || !customPrompt.trim()
+                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                    : "bg-pink-500 hover:bg-pink-600 text-white"
+                }`}
+              >
+                {loadingCustom ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <Send size={18} />
+                    Ask
+                  </>
+                )}
+              </button>
+            </div>
+
+            {customResponse && (
+              <div className="mt-6 bg-gray-800/50 p-4 rounded-lg border border-gray-600">
+                <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                  {customResponse}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
