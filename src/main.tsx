@@ -6,7 +6,7 @@ import App from "./App";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter basename="/whatsapp-tool">
+    <BrowserRouter basename="/">
       <App />
     </BrowserRouter>
   </StrictMode>
